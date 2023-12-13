@@ -59,6 +59,7 @@ def check_system(ttl: int, ip_address: str):
             return True
     else:
         print(f'{Fore.RED}La IP {ip_address} no tiene smb :(')
+        print('Posible linux o mac os')
         return False
 
 # Función para manejar el menú para la opción 1
