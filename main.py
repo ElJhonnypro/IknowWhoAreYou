@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import time
+import re
 from colorama import Fore, init, Style
 
 # Limpiar la pantalla en varias plataformas
@@ -50,11 +51,18 @@ def checkport(port: str, ipadress: str):
             print(f'{Fore.RESET}')
             return False
 
+def checksystem(ttl:int, ipadress:str):
+    print(f'{Fore.RED}TTL: {Fore.BLUE} {ttl}{Fore.RESET}')
+    commmandcrack = subprocess.run(['crackmapexec','smb',ipadress], text=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
+    print(commmandcrack)
+    if commmandcrack:
+        versionname = re.search(r'Windows\s+(\S+)', commmandcrack).group(0)
+        print(f'{Fore.GREEN}Version de smb (Windows): {versionname}')
+    else:
+        print(f'{Fore.RED}La ip {ipadress} no tiene smb :(')
+
 # Función para verificar la versión de Windows en una dirección IP utilizando crackmapexec
 #Desarrollo
-def checkwindowsversion(ipadress):
-    commandexecute = subprocess.run(['crackmapexec','smb',ipadress])
-    print(commandexecute.stdout)
 
 # Función para manejar el menú para la opción 1
 def option1menu():
@@ -64,13 +72,10 @@ def option1menu():
     ipadress = input(f'{Fore.RED}{Style.BRIGHT}MODO NORMAL: Ingrese la IP de destino>{Fore.YELLOW} ')
     
     try:
-        ttloutput = subprocess.run(['ping', '-c', '1', ipadress], text=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=True).stdout.split('ttl=')[1].split()[0]
-        
+        ttloutput = int(subprocess.run(['ping', '-c', '1', ipadress], text=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=True).stdout.split('ttl=')[1].split()[0])
+        print(f'TTL: {ttloutput}')
+        checksystem(ttloutput,ipadress)
         # Determinar si el objetivo es Linux/Mac o Windows según el valor de TTL
-        if int(ttloutput) == 64 or int(ttloutput) == 128:
-            print(f'TTL: {Fore.BLUE}{ttloutput} Linux o Mac (puede compartir el TTL {ttloutput} en internet)')
-        else:
-            print(f'TTL: {Fore.BLUE}{ttloutput} Windows o Windows Server (puede compartir el TTL {ttloutput} en internet)')
 
     except subprocess.CalledProcessError as e:
         print('La página web o dispositivo no existe o hay un error al ejecutarlo')
@@ -90,6 +95,7 @@ def option1menu():
     
     try:
         rangopuertos = int(input('Rango de puertos> '))
+
     except:
         print('Ingrese otro rango de puerto válido')
         initmenu()
