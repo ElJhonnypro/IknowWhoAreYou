@@ -34,7 +34,6 @@ class option:
 
 # Crear instancias de la clase option
 option1 = option(1, 'Modo normal: ver IP, sistema operativo, versión de Windows, etc.')
-option2 = option(2, 'Hyper Ping: requiere dirección IP')
 
 # Inicializar colorama para la salida coloreada
 init(autoreset=True)
@@ -116,6 +115,7 @@ def initmenu():
         {Fore.RED}{Style.BRIGHT}========================== ¡Hola! Bienvenido a IkWhoAreYou =======================
 
         {Fore.BLUE}[1]:{Fore.YELLOW} Modo normal (ver IP, Linux/Mac o Windows, versión de Windows, etc)
+
         {Fore.RED}
         ================================================================================
         """
