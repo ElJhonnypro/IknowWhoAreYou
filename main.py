@@ -22,100 +22,99 @@ if username != 'root':
     sys.exit(1)
 
 # Definir una clase para las opciones del menú
-class option:
+class Option:
     def __init__(self, numberoption, helptext):
         self.number = numberoption
         self.help = helptext
     
-    def itsselected(self, question):
-        if question == self.number:
-            return True
-        else:
-            return False
+    def its_selected(self, question):
+        return question == self.number
 
-# Crear instancias de la clase option
-option1 = option(1, 'Modo normal: ver IP, sistema operativo, versión de Windows, etc.')
+# Crear instancias de la clase Option
+option1 = Option(1, 'Modo normal: ver IP, sistema operativo, versión de Windows, etc.')
 
 # Inicializar colorama para la salida coloreada
 init(autoreset=True)
 
 # Función para verificar si un puerto está abierto en una dirección IP dada
-def checkport(port: str, ipadress: str):
+def check_port(port: str, ip_address: str):
     try:
-        subprocess.run(['nc', '-zvw', '2', ipadress, port], text=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print(f'{Fore.GREEN}Puerto {port} abierto en {ipadress}.')
+        subprocess.run(['nc', '-zvw', '2', ip_address, port], text=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(f'{Fore.GREEN}Puerto {port} abierto en {ip_address}.')
         return True
     except subprocess.CalledProcessError as e:
         if 'Connection timed out' in e.stderr or 'Connection refused' in e.stderr:
-            print(f'{Fore.RED}{Style.BRIGHT}Puerto {port} no abierto en {ipadress}.')
+            print(f'{Fore.RED}{Style.BRIGHT}Puerto {port} no abierto en {ip_address}.')
             print(f'{Fore.RESET}')
             return False
 
-def checksystem(ttl:int, ipadress:str):
+def check_system(ttl: int, ip_address: str):
     print(f'{Fore.RED}TTL: {Fore.BLUE} {ttl}{Fore.RESET}')
-    commmandcrack = subprocess.run(['crackmapexec','smb',ipadress], text=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
-    print(commmandcrack)
-    if commmandcrack:
-        versionname = re.search(r'Windows\s+(\S+)', commmandcrack).group(0)
-        print(f'{Fore.GREEN}Version de smb (Windows): {versionname}')
+    command_crack = subprocess.run(['crackmapexec','smb', ip_address], text=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
+    print(command_crack)
+    if command_crack:
+        version_name = re.search(r'Windows\s+(\S+)', command_crack)
+        if version_name:
+            print(f'{Fore.GREEN}Versión de smb (Windows): {version_name.group(0)}')
+        else:
+            print(f'{Fore.RED}No se pudo determinar la versión de smb (Windows)')
     else:
-        print(f'{Fore.RED}La ip {ipadress} no tiene smb :(')
-
-# Función para verificar la versión de Windows en una dirección IP utilizando crackmapexec
-#Desarrollo
+        print(f'{Fore.RED}La IP {ip_address} no tiene smb :(')
 
 # Función para manejar el menú para la opción 1
-def option1menu():
-    puertosencontrados = []  # Lista para almacenar puertos encontrados
+def option1_menu():
+    puertos_encontrados = []  # Lista para almacenar puertos encontrados
     os.system('clear')
     print(f'{Fore.BLUE}Modo normal activado...')
-    ipadress = input(f'{Fore.RED}{Style.BRIGHT}MODO NORMAL: Ingrese la IP de destino>{Fore.YELLOW} ')
     
-    try:
-        ttloutput = int(subprocess.run(['ping', '-c', '1', ipadress], text=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=True).stdout.split('ttl=')[1].split()[0])
-        print(f'TTL: {ttloutput}')
-        checksystem(ttloutput,ipadress)
-        # Determinar si el objetivo es Linux/Mac o Windows según el valor de TTL
+    while True:
+        ip_address = input(f'{Fore.RED}{Style.BRIGHT}MODO NORMAL: Ingrese la IP de destino>{Fore.YELLOW} ')
+        if ip_address:
+            break
+        else:
+            print('Error: Por favor, ingrese una dirección IP válida.')
 
+    try:
+        ttl_output = int(subprocess.run(['ping', '-c', '1', ip_address], text=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=True).stdout.split('ttl=')[1].split()[0])
+        check_system(ttl_output, ip_address)
     except subprocess.CalledProcessError as e:
         print('La página web o dispositivo no existe o hay un error al ejecutarlo')
-        print('Ingrese un dato correcto')
         sys.exit(1)
 
     # Verificar si los puertos comunes (80, 443) están abiertos y agregarlos a la lista
-    if checkport('80', ipadress):
-        print(f'{Fore.YELLOW}Ingrese al servidor HTTP en: http://{ipadress}/')
-        puertosencontrados.append(80)
+    if check_port('80', ip_address):
+        print(f'{Fore.YELLOW}Ingrese al servidor HTTP en: http://{ip_address}/')
+        puertos_encontrados.append(80)
 
-    if checkport('443', ipadress):
-        print(f'{Fore.YELLOW}Ingrese al servidor HTTPS en: https://{ipadress}/')
-        puertosencontrados.append(443)
+    if check_port('443', ip_address):
+        print(f'{Fore.YELLOW}Ingrese al servidor HTTPS en: https://{ip_address}/')
+        puertos_encontrados.append(443)
 
     print('Detectando puertos...')
     
-    try:
-        rangopuertos = int(input('Rango de puertos> '))
-
-    except:
-        print('Ingrese otro rango de puerto válido')
-        initmenu()
+    while True:
+        try:
+            rango_puertos = int(input('Rango de puertos> '))
+            break
+        except ValueError:
+            print('Error: Por favor, ingrese un número entero válido.')
 
     # Iterar a través del rango de puertos, verificando y agregando puertos abiertos a la lista
-    for i in range(rangopuertos+1):
+    for i in range(rango_puertos + 1):
         # No verificar los puertos 80 o 443
         if i == 80 or i == 443:
-            checkport(str(i), ipadress)
+            check_port(str(i), ip_address)
         else:
-            if checkport(str(i), ipadress):
-                puertosencontrados.append(i)
+            if check_port(str(i), ip_address):
+                puertos_encontrados.append(i)
                 print(f'{Fore.BLUE}¡Puerto encontrado!')
 
     # Imprimir los puertos encontrados
-    for puerto in puertosencontrados:
+    for puerto in puertos_encontrados:
         print(f'Puerto encontrado: {puerto}')
 
 # Función para inicializar el menú principal
-def initmenu():
+def init_menu():
     print(
         f"""
         {Fore.RED}{Style.BRIGHT}========================== ¡Hola! Bienvenido a IkWhoAreYou =======================
@@ -126,24 +125,22 @@ def initmenu():
         ================================================================================
         """
     )
-    try:
-        #Conseguimos la opcion elejida
-        option = int(input(f'{Fore.BLUE}Seleccione una opción:>{Fore.YELLOW}'))
-    except ValueError:
-        print('Error: Por favor, ingrese un número o valor válido')
-        sys.exit(1)
-    except KeyboardInterrupt:
-        print('Gracias por utilizar esta herramienta')
-        os.system('clear')
-        sys.exit(0)
-    if option1.itsselected(option):
-        option1menu()
+
+    while True:
+        try:
+            # Conseguimos la opción elegida
+            opcion = int(input(f'{Fore.BLUE}Seleccione una opción:>{Fore.YELLOW} '))
+            if option1.its_selected(opcion):
+                option1_menu()
+            else:
+                print('Error: Por favor, ingrese una opción válida.')
+        except ValueError:
+            print('Error: Por favor, ingrese un número entero válido.')
+        except KeyboardInterrupt:
+            print(f'{Fore.YELLOW}Adiós. Gracias por usar esta herramienta.')
+            os.system('clear')
+            sys.exit(0)
 
 # Ejecución principal: inicializar el menú principal y manejar interrupciones de teclado
 if __name__ == '__main__':
-    try:
-        initmenu()
-    except KeyboardInterrupt:
-        os.system('clear||cls')
-        print(f'{Fore.YELLOW}Adiós. Gracias por usar esta herramienta.')
-        sys.exit(0)
+    init_menu()
