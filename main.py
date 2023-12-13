@@ -108,6 +108,7 @@ def option1_menu():
 
     # Imprimir los puertos encontrados
     for puerto in puertos_encontrados:
+        os.system('clear')
         print(f'Puerto encontrado: {puerto}')
     check_system(ttl_output, ip_address)
 
