@@ -31,7 +31,7 @@ class Option:
         return question == self.number
 
 # Crear instancias de la clase Option
-option1 = Option(1, 'Modo normal: ver IP, sistema operativo, versión de Windows, etc.')
+normalmode = Option(1, 'Modo normal: ver IP, sistema operativo, versión de Windows, etc.')
 
 # Inicializar colorama para la salida coloreada
 init(autoreset=True)
@@ -51,7 +51,6 @@ def check_port(port: str, ip_address: str):
 def check_system(ttl: int, ip_address: str):
     print(f'{Fore.RED}TTL: {Fore.BLUE} {ttl}{Fore.RESET}')
     command_crack = subprocess.run(['crackmapexec', 'smb', ip_address], text=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
-    print(command_crack)
     if command_crack:
         version_name = re.search(r'Windows\s+(\S+)', command_crack)
         if version_name:
@@ -61,7 +60,6 @@ def check_system(ttl: int, ip_address: str):
         print(f'{Fore.RED}La IP {ip_address} no tiene smb :(')
         print('Posible linux o mac os')
         return False
-
 # Función para manejar el menú para la opción 1
 def option1_menu():
     puertos_encontrados = []  # Lista para almacenar puertos encontrados
@@ -108,9 +106,10 @@ def option1_menu():
 
     # Imprimir los puertos encontrados
     for puerto in puertos_encontrados:
-        os.system('clear')
         print(f'Puerto encontrado: {puerto}')
-    check_system(ttl_output, ip_address)
+    if check_system(ttl_output, ip_address):
+        print('ITS WINDOWS!!!')
+    
 
 # Función para inicializar el menú principal
 def init_menu():
@@ -127,7 +126,7 @@ def init_menu():
     try:
         # Conseguimos la opción elegida
         option_choice = int(input(f'{Fore.BLUE}Seleccione una opción:>{Fore.YELLOW} '))
-        if option1.is_selected(option_choice):
+        if normalmode.is_selected(option_choice):
             option1_menu()
         else:
             print('Error: Por favor, ingrese una opción válida.')
