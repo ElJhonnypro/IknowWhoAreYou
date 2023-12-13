@@ -23,11 +23,11 @@ if username != 'root':
 
 # Definir una clase para las opciones del menú
 class Option:
-    def __init__(self, numberoption, helptext):
-        self.number = numberoption
-        self.help = helptext
+    def __init__(self, number_option, help_text):
+        self.number = number_option
+        self.help = help_text
     
-    def its_selected(self, question):
+    def is_selected(self, question):
         return question == self.number
 
 # Crear instancias de la clase Option
@@ -50,35 +50,30 @@ def check_port(port: str, ip_address: str):
 
 def check_system(ttl: int, ip_address: str):
     print(f'{Fore.RED}TTL: {Fore.BLUE} {ttl}{Fore.RESET}')
-    command_crack = subprocess.run(['crackmapexec','smb', ip_address], text=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
+    command_crack = subprocess.run(['crackmapexec', 'smb', ip_address], text=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
     print(command_crack)
     if command_crack:
         version_name = re.search(r'Windows\s+(\S+)', command_crack)
         if version_name:
             print(f'{Fore.GREEN}Versión de smb (Windows): {version_name.group(0)}')
-        else:
-            print(f'{Fore.RED}No se pudo determinar la versión de smb (Windows)')
+            return True
     else:
         print(f'{Fore.RED}La IP {ip_address} no tiene smb :(')
+        return False
 
 # Función para manejar el menú para la opción 1
 def option1_menu():
     puertos_encontrados = []  # Lista para almacenar puertos encontrados
     os.system('clear')
     print(f'{Fore.BLUE}Modo normal activado...')
+    ip_address = input(f'{Fore.RED}{Style.BRIGHT}MODO NORMAL: Ingrese la IP de destino>{Fore.YELLOW} ')
     
-    while True:
-        ip_address = input(f'{Fore.RED}{Style.BRIGHT}MODO NORMAL: Ingrese la IP de destino>{Fore.YELLOW} ')
-        if ip_address:
-            break
-        else:
-            print('Error: Por favor, ingrese una dirección IP válida.')
-
     try:
         ttl_output = int(subprocess.run(['ping', '-c', '1', ip_address], text=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE, check=True).stdout.split('ttl=')[1].split()[0])
-        check_system(ttl_output, ip_address)
+
     except subprocess.CalledProcessError as e:
         print('La página web o dispositivo no existe o hay un error al ejecutarlo')
+        print('Ingrese un dato correcto')
         sys.exit(1)
 
     # Verificar si los puertos comunes (80, 443) están abiertos y agregarlos a la lista
@@ -91,13 +86,14 @@ def option1_menu():
         puertos_encontrados.append(443)
 
     print('Detectando puertos...')
-    
-    while True:
-        try:
-            rango_puertos = int(input('Rango de puertos> '))
-            break
-        except ValueError:
-            print('Error: Por favor, ingrese un número entero válido.')
+    try:
+        rango_puertos = input('Rango de puertos> ')
+        if not rango_puertos:
+            raise ValueError('Error: No se proporcionó un valor para el rango de puertos.')
+        rango_puertos = int(rango_puertos)
+    except ValueError as e:
+        print(e)
+        sys.exit(1)
 
     # Iterar a través del rango de puertos, verificando y agregando puertos abiertos a la lista
     for i in range(rango_puertos + 1):
@@ -112,6 +108,7 @@ def option1_menu():
     # Imprimir los puertos encontrados
     for puerto in puertos_encontrados:
         print(f'Puerto encontrado: {puerto}')
+    check_system(ttl_output, ip_address)
 
 # Función para inicializar el menú principal
 def init_menu():
@@ -125,21 +122,21 @@ def init_menu():
         ================================================================================
         """
     )
-
-    while True:
-        try:
-            # Conseguimos la opción elegida
-            opcion = int(input(f'{Fore.BLUE}Seleccione una opción:>{Fore.YELLOW} '))
-            if option1.its_selected(opcion):
-                option1_menu()
-            else:
-                print('Error: Por favor, ingrese una opción válida.')
-        except ValueError:
-            print('Error: Por favor, ingrese un número entero válido.')
-        except KeyboardInterrupt:
-            print(f'{Fore.YELLOW}Adiós. Gracias por usar esta herramienta.')
-            os.system('clear')
-            sys.exit(0)
+    try:
+        # Conseguimos la opción elegida
+        option_choice = int(input(f'{Fore.BLUE}Seleccione una opción:>{Fore.YELLOW} '))
+        if option1.is_selected(option_choice):
+            option1_menu()
+        else:
+            print('Error: Por favor, ingrese una opción válida.')
+            sys.exit(1)
+    except ValueError:
+        print('Error: Por favor, ingrese un número o valor válido')
+        sys.exit(1)
+    except KeyboardInterrupt:
+        print('Gracias por utilizar esta herramienta')
+        os.system('clear')
+        sys.exit(0)
 
 # Ejecución principal: inicializar el menú principal y manejar interrupciones de teclado
 if __name__ == '__main__':
